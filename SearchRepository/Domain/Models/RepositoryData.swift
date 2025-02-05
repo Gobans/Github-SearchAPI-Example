@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RepositoryData: Equatable, Hashable, Identifiable {
+struct RepositoryData: Equatable, Hashable, Identifiable, Codable {
     let id: Int
     let name: String
     let owner: Owner
@@ -22,7 +22,7 @@ struct RepositoryData: Equatable, Hashable, Identifiable {
     }
 }
 
-struct Owner: Equatable {
+struct Owner: Equatable, Codable {
     let login: String
     let avatarURL: String
 }
