@@ -14,6 +14,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, RepositoryData>!
     private let activityIndicator = UIActivityIndicatorView(style: .large)
+    private let refreshControl = UIRefreshControl()
 
     private let viewModel = SearchViewModel()
 
@@ -31,8 +32,8 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
 
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] isLoading in
-                if isLoading {
+            .sink { [weak self] isSearchLoading in
+                if isSearchLoading.value, isSearchLoading.mode == .search {
                     self?.activityIndicator.startAnimating()
                 } else {
                     self?.activityIndicator.stopAnimating()
@@ -44,6 +45,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             .receive(on: DispatchQueue.main)
             .sink { [weak self] searchResults in
                 self?.updateSnapshot()
+                self?.collectionView.isHidden = false
             }
             .store(in: &cancelBag)
     }
@@ -62,6 +64,10 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
         collectionView.delegate = self
         collectionView.backgroundColor = .white
         collectionView.register(SearchResultCell.self, forCellWithReuseIdentifier: SearchResultCell.reuseIdentifier)
+
+        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
+
         view.addSubview(collectionView)
     }
 
@@ -111,7 +117,8 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
 
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        viewModel.search(for: searchBar.text ?? "")
+        collectionView.isHidden = true
+        viewModel.search(for: searchBar.text ?? "", mode: .search)
         searchBar.resignFirstResponder()
     }
 
@@ -119,6 +126,12 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
         var snapshot = NSDiffableDataSourceSnapshot<Int, RepositoryData>()
         snapshot.appendSections([0])
         snapshot.appendItems(viewModel.searchResults)
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
+    @objc private func refreshData() {
+        viewModel.refreshData() { [weak self] in
+            self?.refreshControl.endRefreshing()
+        }
     }
 }
