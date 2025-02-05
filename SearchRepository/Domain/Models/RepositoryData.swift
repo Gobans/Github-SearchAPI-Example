@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RepositoryData {
+struct RepositoryData: Equatable, Hashable {
     let id: Int
     let name: String
     let owner: Owner
@@ -17,8 +17,7 @@ struct RepositoryData {
     let openIssuesCount: Int
 }
 
-
-struct Owner {
+struct Owner: Equatable, Hashable {
     let login: String
     let avatarURL: String
 }
