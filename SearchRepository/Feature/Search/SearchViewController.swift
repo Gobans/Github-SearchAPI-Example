@@ -16,8 +16,17 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     private let refreshControl = UIRefreshControl()
 
-    private let viewModel = SearchViewModel()
+    private let viewModel: SearchViewModel
 
+    init(viewModel: SearchViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     private var cancelBag = Set<AnyCancellable>()
 
     override func viewDidLoad() {

@@ -8,10 +8,13 @@
 import UIKit
 
 class MainTabBarController: UITabBarController {
+
+    private let builder = FeatureBuilder()
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let searchVC = UINavigationController(rootViewController: SearchViewController())
+        let searchVC = UINavigationController(rootViewController: builder.buildSearchViewController())
         searchVC.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 0)
 
         let myVC = UINavigationController(rootViewController: MyViewController())

@@ -18,12 +18,15 @@ final class SearchViewModel {
     private var currentPage: Int = 1
     private var hasMorePages: Bool = true
 
-    let repositoryDataUseCase = SearchRepositoryDataUseCaseImpl(repository: RepositoryDataRemoteRepositoryImpl())
-    let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger = FavoriteRepositoryDataManangerImpl()
+    private let repositoryDataUseCase: SearchRepositoryDataUseCase
+    private let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger
 
     private var cancelBag = Set<AnyCancellable>()
 
-    init() {
+    init(repositoryDataUseCase: SearchRepositoryDataUseCase, favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger) {
+        self.repositoryDataUseCase = repositoryDataUseCase
+        self.favoriteRepositoryDataMananger = favoriteRepositoryDataMananger
+        
         favoriteRepositoryDataMananger.favoriteRepositoryData
             .sink { [weak self] favoriteRepositoryData in
                 if let id = self?.repositoryDataListDict.first(where: { $0.value.id == favoriteRepositoryData.id })?.value.id {
@@ -84,7 +87,8 @@ final class SearchViewModel {
     }
 
     func changeFavorite(repositoryId: Int, isFavorite: Bool) {
-        let favoriteRepositoryData = FavoriteRepositoryData(id: repositoryId, favorite: isFavorite)
-        favoriteRepositoryDataMananger.change(favoriteRepositoryData)
+        if let repositoryData = repositoryDataListDict[repositoryId] {
+            favoriteRepositoryDataMananger.change(data: repositoryData, isFavorite: isFavorite)
+        }
     }
 }
