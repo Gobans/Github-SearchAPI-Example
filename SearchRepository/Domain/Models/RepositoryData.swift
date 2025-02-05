@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RepositoryData: Equatable, Hashable {
+struct RepositoryData: Equatable, Hashable, Identifiable {
     let id: Int
     let name: String
     let owner: Owner
@@ -15,9 +15,14 @@ struct RepositoryData: Equatable, Hashable {
     let stargazersCount: Int
     let forksCount: Int
     let openIssuesCount: Int
+    var isFavorite: Bool
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-struct Owner: Equatable, Hashable {
+struct Owner: Equatable {
     let login: String
     let avatarURL: String
 }

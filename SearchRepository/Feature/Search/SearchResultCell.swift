@@ -11,6 +11,10 @@ class SearchResultCell: UICollectionViewCell {
 
     static let reuseIdentifier = "SearchResultCell"
 
+    private var repositoryId: Int = 0
+    private var isFavorite: Bool = false
+
+    var favoriteButtonTapped: ((_ repositoryId: Int, _ isFavorite: Bool) -> Void)?
 
     private let userInfoView = UIView()
     private let nameLabel = UILabel()
@@ -29,10 +33,15 @@ class SearchResultCell: UICollectionViewCell {
     }()
 
     func configure(with data: RepositorySummary) {
+        repositoryId = data.id
+        isFavorite = data.isFavorite
+
         nameLabel.text = data.name
         ownerLabel.text = data.owner.login
         descriptionLabel.text = data.description ?? "No description available"
         stargazersCountLabel.text = String(data.stargazersCount)
+        favoriteButton.isSelected = data.isFavorite
+        favoriteButton.addTarget(self, action: #selector(favoriteButtonTappedAction), for: .touchUpInside)
 
         if let url = URL(string: data.owner.avatarURL) {
             loadImage(from: url)
@@ -110,5 +119,9 @@ class SearchResultCell: UICollectionViewCell {
             divider.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
             divider.heightAnchor.constraint(equalToConstant: 1)
         ])
+    }
+
+    @objc private func favoriteButtonTappedAction() {
+        favoriteButtonTapped?(repositoryId, !isFavorite)
     }
 }

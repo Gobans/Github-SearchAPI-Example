@@ -13,4 +13,5 @@ struct RepositorySummary {
     let owner: Owner
     let description: String?
     let stargazersCount: Int
+    let isFavorite: Bool
 }

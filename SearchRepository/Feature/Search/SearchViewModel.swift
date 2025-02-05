@@ -10,15 +10,30 @@ import Combine
 
 final class SearchViewModel {
 
-    @Published private(set) var searchResults: [RepositoryData] = []
+    private(set) var searchResultSubject = PassthroughSubject<SearchResult, Never>()
     @Published var isLoading = SearchLoading(value: false, mode: .search)
-
+    private(set) var changedRepositoryDataSubject = PassthroughSubject<RepositoryData.ID, Never>()
+    private(set) var repositoryDataListDict: [RepositoryData.ID: RepositoryData] = [:]
     private var prevQuery: String = ""
     private var currentPage: Int = 1
     private var hasMorePages: Bool = true
+
     let repositoryDataUseCase = SearchRepositoryDataUseCaseImpl(repository: RepositoryDataRemoteRepositoryImpl())
+    let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger = FavoriteRepositoryDataManangerImpl()
 
     private var cancelBag = Set<AnyCancellable>()
+
+    init() {
+        favoriteRepositoryDataMananger.favoriteRepositoryData
+            .sink { [weak self] favoriteRepositoryData in
+                if let id = self?.repositoryDataListDict.first(where: { $0.value.id == favoriteRepositoryData.id })?.value.id {
+                    self?.repositoryDataListDict[id]?.isFavorite = favoriteRepositoryData.favorite
+                    self?.changedRepositoryDataSubject.send(id)
+                }
+            }
+            .store(in: &cancelBag)
+    }
+
 
     func search(for query: String, completion: (() -> Void)? = nil, mode: SearchMode) {
         guard !isLoading.value else { return }
@@ -30,7 +45,10 @@ final class SearchViewModel {
         repositoryDataUseCase.repositoryDataList(query: query, page: currentPage)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] repositoryData in
-                self?.searchResults = repositoryData
+                self?.repositoryDataListDict = repositoryData.reduce(into: [:]) { dict, repo in
+                    dict[repo.id] = repo
+                }
+                self?.searchResultSubject.send(SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .all))
                 self?.isLoading = SearchLoading(value: false, mode: mode)
                 self?.hasMorePages = !repositoryData.isEmpty
                 completion?()
@@ -49,15 +67,24 @@ final class SearchViewModel {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] _ in
                 self?.isLoading = SearchLoading(value: false, mode: .search)
-            }, receiveValue: { [weak self] moreData in
-                self?.searchResults.append(contentsOf: moreData)
+            }, receiveValue: { [weak self] repositoryData in
+                self?.repositoryDataListDict.merge(repositoryData.reduce(into: [:]) { dict, repo in
+                    dict[repo.id] = repo
+                }, uniquingKeysWith: { _, new in new })
+
+                self?.searchResultSubject.send(SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .continuous))
                 self?.isLoading = SearchLoading(value: false, mode: .search)
-                self?.hasMorePages = !moreData.isEmpty
+                self?.hasMorePages = !repositoryData.isEmpty
             })
             .store(in: &cancelBag)
     }
 
     func refreshData(completion: @escaping () -> Void) {
         search(for: prevQuery, completion: completion, mode: .refresh)
+    }
+
+    func changeFavorite(repositoryId: Int, isFavorite: Bool) {
+        let favoriteRepositoryData = FavoriteRepositoryData(id: repositoryId, favorite: isFavorite)
+        favoriteRepositoryDataMananger.change(favoriteRepositoryData)
     }
 }

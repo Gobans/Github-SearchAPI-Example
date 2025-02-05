@@ -12,7 +12,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
 
     private let searchBar = UISearchBar()
     private var collectionView: UICollectionView!
-    private var dataSource: UICollectionViewDiffableDataSource<Int, RepositoryData>!
+    private var dataSource: UICollectionViewDiffableDataSource<Int, RepositoryData.ID>!
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     private let refreshControl = UIRefreshControl()
 
@@ -41,11 +41,18 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             }
             .store(in: &cancelBag)
 
-        viewModel.$searchResults
+        viewModel.searchResultSubject
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] searchResults in
-                self?.updateSnapshot()
+            .sink { [weak self] searchResult in
+                self?.updateSearchResultSnapshot(data: searchResult.repositoryData, type: searchResult.type)
                 self?.collectionView.isHidden = false
+            }
+            .store(in: &cancelBag)
+
+        viewModel.changedRepositoryDataSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] id in
+                self?.updateFavoritedSnapshot(data: id)
             }
             .store(in: &cancelBag)
     }
@@ -96,10 +103,13 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
     }
 
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Int, RepositoryData>(collectionView: collectionView) { (collectionView, indexPath, item) -> UICollectionViewCell? in
+        dataSource = UICollectionViewDiffableDataSource<Int, RepositoryData.ID>(collectionView: collectionView) { (collectionView, indexPath, id) -> UICollectionViewCell? in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCell.reuseIdentifier, for: indexPath)
-            if let cell = cell as? SearchResultCell {
-                cell.configure(with: RepositorySummary(id: item.id, name: item.name, owner: item.owner, description: item.description, stargazersCount: item.stargazersCount))
+            if let cell = cell as? SearchResultCell, let item = self.viewModel.repositoryDataListDict[id] {
+                cell.configure(with: RepositorySummary(id: item.id, name: item.name, owner: item.owner, description: item.description, stargazersCount: item.stargazersCount, isFavorite: item.isFavorite))
+                cell.favoriteButtonTapped = { [weak self] repositoryId, isFavorite in
+                    self?.viewModel.changeFavorite(repositoryId: repositoryId, isFavorite: isFavorite)
+                }
             }
             return cell
         }
@@ -122,11 +132,27 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
         searchBar.resignFirstResponder()
     }
 
-    private func updateSnapshot() {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, RepositoryData>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(viewModel.searchResults)
-        dataSource.apply(snapshot, animatingDifferences: false)
+    private func updateSearchResultSnapshot(data: [RepositoryData.ID], type: SearchResultUpdateType) {
+        switch type {
+        case .all:
+            var snapshot = NSDiffableDataSourceSnapshot<Int, RepositoryData.ID>()
+            snapshot.appendSections([0])
+            snapshot.appendItems(data)
+            dataSource.apply(snapshot, animatingDifferences: false)
+        case .continuous:
+            var snapshot = dataSource.snapshot()
+            if snapshot.sectionIdentifiers.isEmpty {
+                snapshot.appendSections([0])
+            }
+            snapshot.appendItems(data)
+            dataSource.apply(snapshot, animatingDifferences: true)
+        }
+    }
+
+    private func updateFavoritedSnapshot(data: RepositoryData.ID) {
+        var snapshot = dataSource.snapshot()
+        snapshot.reconfigureItems([data])
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 
     @objc private func refreshData() {
