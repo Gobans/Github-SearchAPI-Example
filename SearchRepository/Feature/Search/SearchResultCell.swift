@@ -16,7 +16,6 @@ class SearchResultCell: UICollectionViewCell {
 
     var favoriteButtonTapped: ((_ repositoryId: Int, _ isFavorite: Bool) -> Void)?
 
-    private let userInfoView = UIView()
     private let nameLabel = UILabel()
     private let ownerLabel = UILabel()
     private let descriptionLabel = UILabel()

@@ -134,6 +134,10 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
          }
      }
 
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let id = dataSource.itemIdentifier(for: indexPath) else { return }
+        viewModel.routeToDetailViewController(repositoryID: id)
+    }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         collectionView.isHidden = true

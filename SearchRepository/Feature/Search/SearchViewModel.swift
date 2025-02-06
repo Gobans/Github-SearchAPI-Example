@@ -20,13 +20,15 @@ final class SearchViewModel {
 
     private let repositoryDataUseCase: SearchRepositoryDataUseCase
     private let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger
+    private let router: FeatureBuilder.Router
 
     private var cancelBag = Set<AnyCancellable>()
 
-    init(repositoryDataUseCase: SearchRepositoryDataUseCase, favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger) {
+    init(repositoryDataUseCase: SearchRepositoryDataUseCase, favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger, router: FeatureBuilder.Router) {
         self.repositoryDataUseCase = repositoryDataUseCase
         self.favoriteRepositoryDataMananger = favoriteRepositoryDataMananger
-        
+        self.router = router
+
         favoriteRepositoryDataMananger.favoriteRepositoryData
             .sink { [weak self] favoriteRepositoryData in
                 if let id = self?.repositoryDataListDict.first(where: { $0.value.id == favoriteRepositoryData.id })?.value.id {
@@ -89,6 +91,12 @@ final class SearchViewModel {
     func changeFavorite(repositoryId: Int, isFavorite: Bool) {
         if let repositoryData = repositoryDataListDict[repositoryId] {
             favoriteRepositoryDataMananger.change(data: repositoryData, isFavorite: isFavorite)
+        }
+    }
+
+    func routeToDetailViewController(repositoryID: Int) {
+        if let payload = repositoryDataListDict[repositoryID] {
+            router.routeToDetailPage(payload: payload)
         }
     }
 }
