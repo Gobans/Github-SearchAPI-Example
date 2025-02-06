@@ -12,9 +12,8 @@ class SearchResultCell: UICollectionViewCell {
     static let reuseIdentifier = "SearchResultCell"
 
     private var repositoryId: Int = 0
-    private var isFavorite: Bool = false
 
-    var favoriteButtonTapped: ((_ repositoryId: Int, _ isFavorite: Bool) -> Void)?
+    var favoriteButtonTapped: ((_ repositoryId: Int) -> Void)?
 
     private let nameLabel = UILabel()
     private let ownerLabel = UILabel()
@@ -33,7 +32,6 @@ class SearchResultCell: UICollectionViewCell {
 
     func configure(with data: RepositorySummary) {
         repositoryId = data.id
-        isFavorite = data.isFavorite
 
         nameLabel.text = data.name
         ownerLabel.text = data.owner.login
@@ -121,6 +119,6 @@ class SearchResultCell: UICollectionViewCell {
     }
 
     @objc private func favoriteButtonTappedAction() {
-        favoriteButtonTapped?(repositoryId, !isFavorite)
+        favoriteButtonTapped?(repositoryId)
     }
 }

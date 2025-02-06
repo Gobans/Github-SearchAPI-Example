@@ -88,9 +88,10 @@ final class SearchViewModel {
         search(for: prevQuery, completion: completion, mode: .refresh)
     }
 
-    func changeFavorite(repositoryId: Int, isFavorite: Bool) {
+    func changeFavorite(repositoryId: Int) {
         if let repositoryData = repositoryDataListDict[repositoryId] {
-            favoriteRepositoryDataMananger.change(data: repositoryData, isFavorite: isFavorite)
+            let newFavorite = !repositoryData.isFavorite
+            favoriteRepositoryDataMananger.change(data: repositoryData, isFavorite: newFavorite)
         }
     }
 

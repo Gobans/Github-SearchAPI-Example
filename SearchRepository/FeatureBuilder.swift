@@ -15,8 +15,14 @@ final class FeatureBuilder {
 
         weak var rootVC: UIViewController? = nil
 
+        private let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger
+
+        init(favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger) {
+            self.favoriteRepositoryDataMananger = favoriteRepositoryDataMananger
+        }
+
         func routeToDetailPage(payload: RepositoryData) {
-            let viewModel = RepositoryDetailViewModel(repositoryData: payload)
+            let viewModel = RepositoryDetailViewModel(repositoryData: payload, favoriteRepositoryDataManger: favoriteRepositoryDataMananger)
             let vc = RepositoryDetailViewController(viewModel: viewModel)
             vc.modalPresentationStyle = .pageSheet
             rootVC?.present(vc, animated: true)
@@ -24,7 +30,7 @@ final class FeatureBuilder {
     }
 
     func buildSearchViewController() -> SearchViewController {
-        let router = Router()
+        let router = Router(favoriteRepositoryDataMananger: favoriteRepositoryDataMananger)
         let repository = RepositoryDataRemoteRepositoryImpl(favoriteRepositoryDataManager: favoriteRepositoryDataMananger)
         let useCase = SearchRepositoryDataUseCaseImpl(repository: repository)
         let viewModel = SearchViewModel(repositoryDataUseCase: useCase, favoriteRepositoryDataMananger: favoriteRepositoryDataMananger, router: router)

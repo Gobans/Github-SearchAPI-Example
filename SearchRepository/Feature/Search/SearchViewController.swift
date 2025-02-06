@@ -116,8 +116,8 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCell.reuseIdentifier, for: indexPath)
             if let cell = cell as? SearchResultCell, let item = self.viewModel.repositoryDataListDict[id] {
                 cell.configure(with: RepositorySummary(id: item.id, name: item.name, owner: item.owner, description: item.description, stargazersCount: item.stargazersCount, isFavorite: item.isFavorite))
-                cell.favoriteButtonTapped = { [weak self] repositoryId, isFavorite in
-                    self?.viewModel.changeFavorite(repositoryId: repositoryId, isFavorite: isFavorite)
+                cell.favoriteButtonTapped = { [weak self] repositoryId in
+                    self?.viewModel.changeFavorite(repositoryId: repositoryId)
                 }
             }
             return cell

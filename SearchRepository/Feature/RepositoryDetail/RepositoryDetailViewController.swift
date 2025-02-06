@@ -4,6 +4,8 @@
 //
 //  Created by Lee Myeonghwan on 2/6/25.
 //
+
+import Combine
 import UIKit
 
 final class RepositoryDetailViewController: UIViewController {
@@ -54,12 +56,21 @@ final class RepositoryDetailViewController: UIViewController {
 
     private var didUpdateHeight = false
 
+    private var cancelBag = Set<AnyCancellable>()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
 
         setupUI()
         configure(with: viewModel.repositoryData)
+
+        viewModel.favoriteChangedSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isFavorite in
+                self?.favoriteButton.isSelected = isFavorite
+            }
+            .store(in: &cancelBag)
     }
 
     override func viewDidLayoutSubviews() {
@@ -248,7 +259,9 @@ final class RepositoryDetailViewController: UIViewController {
         }
     }
 
-    @objc private func favoriteButtonTappedAction() {}
+    @objc private func favoriteButtonTappedAction() {
+        viewModel.changeFavorite()
+    }
 
     @objc private func moreButtonTappedAction() {
         moreButton.isHidden = true
