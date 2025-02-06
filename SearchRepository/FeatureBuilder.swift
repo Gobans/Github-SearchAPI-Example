@@ -31,7 +31,7 @@ final class FeatureBuilder {
 
     func buildSearchViewController() -> SearchViewController {
         let router = Router(favoriteRepositoryDataMananger: favoriteRepositoryDataMananger)
-        let repository = RepositoryDataRemoteRepositoryImpl(favoriteRepositoryDataManager: favoriteRepositoryDataMananger)
+        let repository = RepositoryDataRemoteRepositoryImpl(favoriteRepository: favoriteRepositoryDataMananger)
         let useCase = SearchRepositoryDataUseCaseImpl(repository: repository)
         let viewModel = SearchViewModel(repositoryDataUseCase: useCase, favoriteRepositoryDataMananger: favoriteRepositoryDataMananger, router: router)
         let vc = SearchViewController(viewModel: viewModel)

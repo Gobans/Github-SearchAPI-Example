@@ -11,11 +11,14 @@ import Combine
 protocol FavoriteRepositoryDataMananger {
     var changedRepositoryData: AnyPublisher<FavoriteRepositoryData, Never> { get }
     func change(data: RepositoryData, isFavorite: Bool)
-    func isFavorite(repositoryId: RepositoryData.ID) -> Bool
     func repositoryDataListDict() -> [RepositoryData.ID : RepositoryData]
 }
 
-final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger {
+protocol FavoriteRepository {
+    func isFavorite(repositoryId: RepositoryData.ID) -> Bool
+}
+
+final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger, FavoriteRepository {
 
     private let userDefaults = UserDefaults()
 
