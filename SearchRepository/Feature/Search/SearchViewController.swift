@@ -122,6 +122,9 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             }
             return cell
         }
+        var snapshot = NSDiffableDataSourceSnapshot<Int, RepositoryData.ID>()
+        snapshot.appendSections([0])
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -154,9 +157,6 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             dataSource.apply(snapshot, animatingDifferences: false)
         case .continuous:
             var snapshot = dataSource.snapshot()
-            if snapshot.sectionIdentifiers.isEmpty {
-                snapshot.appendSections([0])
-            }
             snapshot.appendItems(data)
             dataSource.apply(snapshot, animatingDifferences: true)
         }

@@ -10,8 +10,13 @@ import Combine
 
 class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
 
+    enum Section: Int, CaseIterable {
+        case ad
+        case repository
+    }
+
     private var collectionView: UICollectionView!
-    private var dataSource: UICollectionViewDiffableDataSource<Int, RepositoryData.ID>!
+    private var dataSource: UICollectionViewDiffableDataSource<Section, RepositoryData.ID>!
 
     private let viewModel: MyRepositoryViewModel
 
@@ -48,6 +53,16 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
                 self?.updateFavoritedSnapshot(data: id)
             }
             .store(in: &cancelBag)
+
+        viewModel.$adData
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] adData in
+                self?.updateAdSnapshot(data: adData.id)
+            }
+            .store(in: &cancelBag)
+
+        viewModel.fetchAdData()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -62,11 +77,36 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
         collectionView.delegate = self
         collectionView.backgroundColor = .white
         collectionView.register(SearchResultCell.self, forCellWithReuseIdentifier: SearchResultCell.reuseIdentifier)
+        collectionView.register(AdCell.self, forCellWithReuseIdentifier: AdCell.reuseIdentifier)
 
         view.addSubview(collectionView)
     }
 
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
+        return UICollectionViewCompositionalLayout { (sectionIndex, _) -> NSCollectionLayoutSection? in
+            if sectionIndex == 0 {
+                return self.createAdSectionLayout()
+            } else {
+                return self.createRepositorySectionLayout()
+            }
+        }
+    }
+
+    private func createAdSectionLayout() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(100))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(100))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.orthogonalScrollingBehavior = .paging
+        section.interGroupSpacing = 10
+
+        return section
+    }
+
+    private func createRepositorySectionLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(100))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
@@ -76,22 +116,34 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 10
 
-        let layout = UICollectionViewCompositionalLayout(section: section)
-
-        return layout
+        return section
     }
 
     private func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Int, RepositoryData.ID>(collectionView: collectionView) { (collectionView, indexPath, id) -> UICollectionViewCell? in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCell.reuseIdentifier, for: indexPath)
-            if let cell = cell as? SearchResultCell, let item = self.viewModel.repositoryDataListDict[id] {
-                cell.configure(with: RepositorySummary(id: item.id, name: item.name, owner: item.owner, description: item.description, stargazersCount: item.stargazersCount, isFavorite: item.isFavorite))
-                cell.favoriteButtonTapped = { [weak self] repositoryId in
-                    self?.viewModel.changeFavorite(repositoryId: repositoryId)
+        dataSource = UICollectionViewDiffableDataSource<Section, RepositoryData.ID>(collectionView: collectionView) { (collectionView, indexPath, id) -> UICollectionViewCell? in
+            let section = Section.allCases[indexPath.section]
+            switch section {
+            case .ad:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AdCell.reuseIdentifier, for: indexPath)
+                if let cell = cell as? AdCell {
+                    cell.configure(with: self.viewModel.adData)
                 }
+                return cell
+
+            case .repository:
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCell.reuseIdentifier, for: indexPath)
+                if let cell = cell as? SearchResultCell, let item = self.viewModel.repositoryDataListDict[id] {
+                    cell.configure(with: RepositorySummary(id: item.id, name: item.name, owner: item.owner, description: item.description, stargazersCount: item.stargazersCount, isFavorite: item.isFavorite))
+                    cell.favoriteButtonTapped = { [weak self] repositoryId in
+                        self?.viewModel.changeFavorite(repositoryId: repositoryId)
+                    }
+                }
+                return cell
             }
-            return cell
         }
+        var snapshot = NSDiffableDataSourceSnapshot<Section, RepositoryData.ID>()
+        snapshot.appendSections([.ad, .repository])
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 
 
@@ -100,10 +152,17 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
         viewModel.routeToDetailViewController(repositoryID: id)
     }
 
+    private func updateAdSnapshot(data: AdData.ID) {
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteItems(snapshot.itemIdentifiers(inSection: .ad))
+        snapshot.appendItems([data], toSection: .ad)
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     private func updateDataListSnapshot(data: [RepositoryData.ID]) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, RepositoryData.ID>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(data)
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteItems(snapshot.itemIdentifiers(inSection: .repository))
+        snapshot.appendItems(data, toSection: .repository)
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 
