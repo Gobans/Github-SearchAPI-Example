@@ -21,11 +21,11 @@ final class RepositoryDetailViewModel {
         self.repositoryData = repositoryData
         self.favoriteRepositoryDataMananger = favoriteRepositoryDataManger
 
-        favoriteRepositoryDataMananger.favoriteRepositoryData
-            .sink { [weak self] favoriteRepositoryData in
-                if favoriteRepositoryData.id == self?.repositoryData.id {
-                    self?.repositoryData.isFavorite = favoriteRepositoryData.favorite
-                    self?.favoriteChangedSubject.send(favoriteRepositoryData.favorite)
+        favoriteRepositoryDataMananger.changedRepositoryData
+            .sink { [weak self] changedRepositoryData in
+                if changedRepositoryData.id == self?.repositoryData.id {
+                    self?.repositoryData.isFavorite = changedRepositoryData.favorite
+                    self?.favoriteChangedSubject.send(changedRepositoryData.favorite)
                 }
             }
             .store(in: &cancelBag)

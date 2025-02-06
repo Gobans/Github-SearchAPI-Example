@@ -29,10 +29,10 @@ final class SearchViewModel {
         self.favoriteRepositoryDataMananger = favoriteRepositoryDataMananger
         self.router = router
 
-        favoriteRepositoryDataMananger.favoriteRepositoryData
-            .sink { [weak self] favoriteRepositoryData in
-                if let id = self?.repositoryDataListDict.first(where: { $0.value.id == favoriteRepositoryData.id })?.value.id {
-                    self?.repositoryDataListDict[id]?.isFavorite = favoriteRepositoryData.favorite
+        favoriteRepositoryDataMananger.changedRepositoryData
+            .sink { [weak self] changedRepositoryData in
+                if let id = self?.repositoryDataListDict.first(where: { $0.value.id == changedRepositoryData.id })?.value.id {
+                    self?.repositoryDataListDict[id]?.isFavorite = changedRepositoryData.favorite
                     self?.changedRepositoryDataSubject.send(id)
                 }
             }

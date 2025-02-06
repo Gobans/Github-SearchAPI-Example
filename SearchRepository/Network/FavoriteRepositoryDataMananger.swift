@@ -9,9 +9,10 @@ import Foundation
 import Combine
 
 protocol FavoriteRepositoryDataMananger {
-    var favoriteRepositoryData: AnyPublisher<FavoriteRepositoryData, Never> { get }
+    var changedRepositoryData: AnyPublisher<FavoriteRepositoryData, Never> { get }
     func change(data: RepositoryData, isFavorite: Bool)
     func isFavorite(repositoryId: RepositoryData.ID) -> Bool
+    func repositoryDataListDict() -> [RepositoryData.ID : RepositoryData]
 }
 
 final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger {
@@ -50,7 +51,7 @@ final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger {
         }
     }
 
-    var favoriteRepositoryData: AnyPublisher<FavoriteRepositoryData, Never> {
+    var changedRepositoryData: AnyPublisher<FavoriteRepositoryData, Never> {
         favoriteSubject.eraseToAnyPublisher()
     }
 
@@ -73,7 +74,7 @@ final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger {
         return false
     }
 
-    func favoriteRepositoryDataList() -> [RepositoryData] {
-        return []
+    func repositoryDataListDict() -> [RepositoryData.ID : RepositoryData] {
+        return repositoryDict
     }
 }

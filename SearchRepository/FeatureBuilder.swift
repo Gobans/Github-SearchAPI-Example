@@ -38,4 +38,12 @@ final class FeatureBuilder {
         router.rootVC = vc
         return vc
     }
+
+    func buildMyViewController() -> MyRepositoryViewController {
+        let router = Router(favoriteRepositoryDataMananger: favoriteRepositoryDataMananger)
+        let viewModel = MyRepositoryViewModel(favoriteRepositoryDataMananger: favoriteRepositoryDataMananger, router: router)
+        let vc = MyRepositoryViewController(viewModel: viewModel)
+        router.rootVC = vc
+        return vc
+    }
 }
