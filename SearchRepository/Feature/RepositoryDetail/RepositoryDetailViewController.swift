@@ -38,8 +38,10 @@ final class RepositoryDetailViewController: UIViewController {
     private let ownerLabel = UILabel()
     private let favoriteButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage(systemName: "star"), for: .normal)
-        button.setImage(UIImage(systemName: "star.fill"), for: .selected)
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 22)
+        button.setImage(UIImage(systemName: "star")?.withConfiguration(imageConfig), for: .normal)
+        button.setImage(UIImage(systemName: "star.fill")?.withConfiguration(imageConfig), for: .selected)
+        button.tintColor = .black
         return button
     }()
     private let favoriteStargazersCountLabel = UILabel()
@@ -69,6 +71,7 @@ final class RepositoryDetailViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isFavorite in
                 self?.favoriteButton.isSelected = isFavorite
+                self?.favoriteButton.tintColor = isFavorite ? .systemYellow : .black
             }
             .store(in: &cancelBag)
     }
@@ -101,9 +104,8 @@ final class RepositoryDetailViewController: UIViewController {
         forkCountLabel.text = "\(data.forksCount)"
         openIssueCountLabel.text = "\(data.openIssuesCount)"
         favoriteButton.isSelected = data.isFavorite
-        favoriteButton.addTarget(self, action: #selector(favoriteButtonTappedAction), for: .touchUpInside)
+        favoriteButton.tintColor = favoriteButton.isSelected ? .systemYellow : .black
         favoriteStargazersCountLabel.text = String(data.stargazersCount)
-
         avatarImageView.setImage(from: data.owner.avatarURL)
     }
 
@@ -113,6 +115,10 @@ final class RepositoryDetailViewController: UIViewController {
         descriptionLabel.font = .preferredFont(forTextStyle: .body)
         descriptionLabel.numberOfLines = 0
         starCountLabel.font = .systemFont(ofSize: 16)
+
+        favoriteButton.addTarget(self, action: #selector(favoriteButtonTappedAction), for: .touchUpInside)
+
+        favoriteStargazersCountLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let favoriteStackView = UIStackView(arrangedSubviews: [favoriteButton, favoriteStargazersCountLabel])
         favoriteStackView.axis = .horizontal
@@ -204,7 +210,8 @@ final class RepositoryDetailViewController: UIViewController {
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             stackView.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -16),
-            scrollView.widthAnchor.constraint(equalTo: stackView.widthAnchor)
+            scrollView.widthAnchor.constraint(equalTo: stackView.widthAnchor),
+            favoriteStargazersCountLabel.centerYAnchor.constraint(equalTo: favoriteButton.centerYAnchor)
         ])
     }
 

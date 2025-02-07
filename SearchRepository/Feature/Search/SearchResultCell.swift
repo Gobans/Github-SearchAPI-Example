@@ -14,11 +14,17 @@ class SearchResultCell: UICollectionViewCell {
     private var repositoryId: Int = 0
 
     var favoriteButtonTapped: ((_ repositoryId: Int) -> Void)?
-
     private let nameLabel = UILabel()
     private let ownerLabel = UILabel()
     private let descriptionLabel = UILabel()
-    private let favoriteButton = UIButton()
+    private let favoriteButton: UIButton = {
+        let button = UIButton()
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 22)
+        button.setImage(UIImage(systemName: "star")?.withConfiguration(imageConfig), for: .normal)
+        button.setImage(UIImage(systemName: "star.fill")?.withConfiguration(imageConfig), for: .selected)
+        button.tintColor = .black
+        return button
+    }()
     private let stargazersCountLabel = UILabel()
     private let avatarImageView = UIImageView()
 
@@ -38,7 +44,7 @@ class SearchResultCell: UICollectionViewCell {
         descriptionLabel.text = data.description ?? "No description available"
         stargazersCountLabel.text = String(data.stargazersCount)
         favoriteButton.isSelected = data.isFavorite
-        favoriteButton.addTarget(self, action: #selector(favoriteButtonTappedAction), for: .touchUpInside)
+        favoriteButton.tintColor = favoriteButton.isSelected ? .systemYellow : .black
 
         avatarImageView.setImage(from: data.owner.avatarURL)
     }
@@ -64,11 +70,11 @@ class SearchResultCell: UICollectionViewCell {
         descriptionLabel.font = UIFont.systemFont(ofSize: 16)
         descriptionLabel.numberOfLines = 0
 
-        favoriteButton.setImage(UIImage(systemName: "star"), for: .normal)
-        favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .selected)
+        favoriteButton.addTarget(self, action: #selector(favoriteButtonTappedAction), for: .touchUpInside)
 
         stargazersCountLabel.font = UIFont.systemFont(ofSize: 16)
         stargazersCountLabel.numberOfLines = 1
+        stargazersCountLabel.translatesAutoresizingMaskIntoConstraints = false
 
         avatarImageView.layer.cornerRadius = 15
         avatarImageView.clipsToBounds = true
@@ -101,7 +107,8 @@ class SearchResultCell: UICollectionViewCell {
             divider.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 10),
             divider.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
             divider.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            divider.heightAnchor.constraint(equalToConstant: 1)
+            divider.heightAnchor.constraint(equalToConstant: 1),
+            stargazersCountLabel.centerYAnchor.constraint(equalTo: favoriteButton.centerYAnchor)
         ])
     }
 
