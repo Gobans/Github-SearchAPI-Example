@@ -51,6 +51,11 @@ final class SearchViewModel {
 
 
     func search(for query: String, searchCompletion: (() -> Void)? = nil, mode: SearchMode) {
+        guard !query.isEmpty else {
+            searchResultSubject.send(SearchResult(repositoryData: [], type: .all))
+            searchResultViewState = .initial
+            return
+        }
         guard !isLoading.value else { return }
         isLoading = SearchLoading(value: true, mode: mode)
 
