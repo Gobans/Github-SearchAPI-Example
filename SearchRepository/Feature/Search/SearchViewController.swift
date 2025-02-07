@@ -138,6 +138,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
      }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        searchBar.resignFirstResponder()
         guard let id = dataSource.itemIdentifier(for: indexPath) else { return }
         viewModel.routeToDetailViewController(repositoryID: id)
     }
@@ -172,5 +173,11 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
         viewModel.refreshData() { [weak self] in
             self?.refreshControl.endRefreshing()
         }
+    }
+}
+
+extension SearchViewController: UIScrollViewDelegate {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        self.searchBar.resignFirstResponder()
     }
 }
