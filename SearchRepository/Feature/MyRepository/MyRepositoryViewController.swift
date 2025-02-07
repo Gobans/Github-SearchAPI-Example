@@ -78,6 +78,8 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
         collectionView.backgroundColor = .white
         collectionView.register(SearchResultCell.self, forCellWithReuseIdentifier: SearchResultCell.reuseIdentifier)
         collectionView.register(AdCell.self, forCellWithReuseIdentifier: AdCell.reuseIdentifier)
+        collectionView.register(RepositoryHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: RepositoryHeaderView.reuseIdentifier)
+
 
         view.addSubview(collectionView)
     }
@@ -116,6 +118,15 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 10
 
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(44))
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+
+        section.boundarySupplementaryItems = [header]
+
         return section
     }
 
@@ -140,6 +151,21 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
                 }
                 return cell
             }
+        }
+
+        dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
+            guard kind == UICollectionView.elementKindSectionHeader else { return nil }
+
+            let section = Section.allCases[indexPath.section]
+            if section == .repository {
+                let headerView = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: RepositoryHeaderView.reuseIdentifier,
+                    for: indexPath
+                ) as? RepositoryHeaderView
+                return headerView
+            }
+            return nil
         }
         var snapshot = NSDiffableDataSourceSnapshot<Section, RepositoryData.ID>()
         snapshot.appendSections([.ad, .repository])
