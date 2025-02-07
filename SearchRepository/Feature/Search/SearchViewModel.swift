@@ -10,8 +10,8 @@ import Combine
 
 final class SearchViewModel {
 
-    private(set) var searchResultSubject = PassthroughSubject<SearchResult, Never>()
-    @Published var isLoading = SearchLoading(value: false, mode: .search)
+    @Published private(set) var searchResult: SearchResult = SearchResult(repositoryData: [], type: .initial)
+    @Published private(set) var isLoading = SearchLoading(value: false, mode: .search)
     private(set) var changedRepositoryDataSubject = PassthroughSubject<RepositoryData.ID, Never>()
     private(set) var repositoryDataListDict: [RepositoryData.ID: RepositoryData] = [:]
     private var prevQuery: String = ""
@@ -53,7 +53,11 @@ final class SearchViewModel {
                 self?.repositoryDataListDict = repositoryData.reduce(into: [:]) { dict, repo in
                     dict[repo.id] = repo
                 }
-                self?.searchResultSubject.send(SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .all))
+                if repositoryData.isEmpty {
+                    self?.searchResult = SearchResult(repositoryData: [], type: .empty)
+                } else {
+                    self?.searchResult = SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .all)
+                }
                 self?.isLoading = SearchLoading(value: false, mode: mode)
                 self?.hasMorePages = !repositoryData.isEmpty
                 completion?()
@@ -77,7 +81,7 @@ final class SearchViewModel {
                     dict[repo.id] = repo
                 }, uniquingKeysWith: { _, new in new })
 
-                self?.searchResultSubject.send(SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .continuous))
+                self?.searchResult = SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .continuous)
                 self?.isLoading = SearchLoading(value: false, mode: .search)
                 self?.hasMorePages = !repositoryData.isEmpty
             })
