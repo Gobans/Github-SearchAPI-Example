@@ -7,20 +7,20 @@
 
 import UIKit
 import Combine
+import Network
 
 class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
 
-    private let stateView: StateView = {
-        let view = StateView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.isHidden = true
-        return view
-    }()
+    private let stateView = StateView()
     private let searchBar = UISearchBar()
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, RepositoryData.ID>!
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     private let refreshControl = UIRefreshControl()
+    private let offlineBanner = OfflineBannerView()
+
+    private let networkMonitor = NWPathMonitor()
+    private let queue = DispatchQueue.global(qos: .background)
 
     private var scrollDebounceCancellable: AnyCancellable?
 
@@ -47,6 +47,8 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
         setupActivityIndicator()
         setupDataSource()
         setupStateView()
+        setupOfflineBanner()
+        startNetworkMonitoring()
 
         viewModel.$isLoading
             .receive(on: DispatchQueue.main)
@@ -93,6 +95,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
     }
 
     private func setupStateView() {
+        stateView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(stateView)
         NSLayoutConstraint.activate([
             stateView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -250,5 +253,54 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
 extension SearchViewController: UIScrollViewDelegate {
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.searchBar.resignFirstResponder()
+    }
+}
+
+extension SearchViewController {
+    private func setupOfflineBanner() {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        navigationBar.addSubview(offlineBanner)
+        offlineBanner.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            offlineBanner.leadingAnchor.constraint(equalTo: searchBar.leadingAnchor),
+            offlineBanner.trailingAnchor.constraint(equalTo: searchBar.trailingAnchor),
+            offlineBanner.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
+            offlineBanner.heightAnchor.constraint(equalToConstant: 30)
+        ])
+    }
+
+    private func startNetworkMonitoring() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                if path.status == .satisfied {
+                    self?.hideOfflineBanner()
+                } else {
+                    self?.showOfflineBanner()
+                }
+            }
+        }
+        networkMonitor.start(queue: queue)
+    }
+
+    private func showOfflineBanner() {
+        guard offlineBanner.isHidden else { return }
+        offlineBanner.isHidden = false
+        offlineBanner.transform = CGAffineTransform(translationX: 0, y: -30)
+
+        UIView.animate(withDuration: 0.5, animations: {
+            self.offlineBanner.transform = .identity
+        })
+    }
+
+    private func hideOfflineBanner() {
+        guard !offlineBanner.isHidden else { return }
+
+        UIView.animate(withDuration: 0.5, animations: {
+            self.offlineBanner.transform = CGAffineTransform(translationX: 0, y: -30)
+        }) { _ in
+            self.offlineBanner.isHidden = true
+        }
     }
 }
