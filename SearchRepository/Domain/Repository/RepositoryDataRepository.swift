@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 protocol RepositoryDataRemoteRepository {
-    func fetchRepositoryDataList(query: String, page: Int) -> AnyPublisher<[RepositoryData], Error>
+    func fetchRepositoryDataList(query: String, page: Int) -> AnyPublisher<[RepositoryData], SearchError>
 }
 
 protocol RepositoryDataLocalRepository {

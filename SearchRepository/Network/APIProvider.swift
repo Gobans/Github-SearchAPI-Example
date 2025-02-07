@@ -21,9 +21,11 @@ final class APIProvider<Target: TargetType> {
 
         return URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { data, response in
-                guard let httpResponse = response as? HTTPURLResponse,
-                      (200...299).contains(httpResponse.statusCode) else {
+                guard let httpResponse = response as? HTTPURLResponse else {
                     throw URLError(.badServerResponse)
+                }
+                guard (200...299).contains(httpResponse.statusCode) else {
+                    throw HTTPError.badServerResponse(statusCode: httpResponse.statusCode)
                 }
                 return data
             }

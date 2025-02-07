@@ -10,13 +10,23 @@ import Combine
 
 final class SearchViewModel {
 
-    @Published private(set) var searchResult: SearchResult = SearchResult(repositoryData: [], type: .initial)
+    private(set) var searchResultSubject = PassthroughSubject<SearchResult, Never>()
+    @Published private(set) var searchResultViewState: SearchResultViewState = .initial
+
     @Published private(set) var isLoading = SearchLoading(value: false, mode: .search)
+    private(set) var showToastSubject = PassthroughSubject<String, Never>()
+
     private(set) var changedRepositoryDataSubject = PassthroughSubject<RepositoryData.ID, Never>()
     private(set) var repositoryDataListDict: [RepositoryData.ID: RepositoryData] = [:]
+
     private var prevQuery: String = ""
     private var currentPage: Int = 1
     private var hasMorePages: Bool = true
+    private var isTemporaryPreventPaging = false
+
+    private var isPagingPossible: Bool {
+        !isLoading.value && hasMorePages && !isTemporaryPreventPaging
+    }
 
     private let repositoryDataUseCase: SearchRepositoryDataUseCase
     private let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger
@@ -40,7 +50,7 @@ final class SearchViewModel {
     }
 
 
-    func search(for query: String, completion: (() -> Void)? = nil, mode: SearchMode) {
+    func search(for query: String, searchCompletion: (() -> Void)? = nil, mode: SearchMode) {
         guard !isLoading.value else { return }
         isLoading = SearchLoading(value: true, mode: mode)
 
@@ -49,47 +59,78 @@ final class SearchViewModel {
 
         repositoryDataUseCase.repositoryDataList(query: query, page: currentPage)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] repositoryData in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    switch error {
+                    case .badServerResponse, .tooManyRequest:
+                        switch mode {
+                        case .search:
+                            self?.searchResultSubject.send(SearchResult(repositoryData: [], type: .all))
+                            self?.searchResultViewState = .networkError(error.errorMessage)
+                        case .refresh:
+                            self?.showToastSubject.send(error.errorMessage)
+                        }
+                    default:
+                        break
+                    }
+                }
+                self?.isLoading = SearchLoading(value: false, mode: mode)
+                searchCompletion?()
+            }, receiveValue: { [weak self] repositoryData in
                 self?.repositoryDataListDict = repositoryData.reduce(into: [:]) { dict, repo in
                     dict[repo.id] = repo
                 }
                 if repositoryData.isEmpty {
-                    self?.searchResult = SearchResult(repositoryData: [], type: .empty)
+                    self?.searchResultSubject.send(SearchResult(repositoryData: [], type: .all))
+                    self?.searchResultViewState = .noResult
                 } else {
-                    self?.searchResult = SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .all)
+                    self?.searchResultSubject.send(SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .all))
+                    self?.searchResultViewState = .showResult
                 }
                 self?.isLoading = SearchLoading(value: false, mode: mode)
                 self?.hasMorePages = !repositoryData.isEmpty
-                completion?()
-            }
+                searchCompletion?()
+            })
             .store(in: &cancelBag)
     }
 
-    func loadMoreIfNeeded() {
-        guard !isLoading.value, hasMorePages else { return }
+    func loadMoreRepositoryData() {
+        guard isPagingPossible else { return }
 
         isLoading = SearchLoading(value: true, mode: .search)
         currentPage += 1
 
-        // refactor: 네트워크 오류인 경우, hasMorePage 상태를 갱신 x
         repositoryDataUseCase.repositoryDataList(query: prevQuery, page: currentPage)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] _ in
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    switch error {
+                    case .badServerResponse, .tooManyRequest:
+                        self?.isTemporaryPreventPaging = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            self?.isTemporaryPreventPaging = false
+                        }
+                        self?.showToastSubject.send(error.errorMessage)
+                    case .noMorePageAvailable:
+                        self?.hasMorePages = false
+                        self?.showToastSubject.send(error.errorMessage)
+                    case .unknown:
+                        break
+                    }
+                }
                 self?.isLoading = SearchLoading(value: false, mode: .search)
             }, receiveValue: { [weak self] repositoryData in
                 self?.repositoryDataListDict.merge(repositoryData.reduce(into: [:]) { dict, repo in
                     dict[repo.id] = repo
                 }, uniquingKeysWith: { _, new in new })
-
-                self?.searchResult = SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .continuous)
+                self?.searchResultSubject.send(SearchResult(repositoryData: repositoryData.map{ $0.id }, type: .continuous))
                 self?.isLoading = SearchLoading(value: false, mode: .search)
-                self?.hasMorePages = !repositoryData.isEmpty
             })
             .store(in: &cancelBag)
     }
 
     func refreshData(completion: @escaping () -> Void) {
-        search(for: prevQuery, completion: completion, mode: .refresh)
+        search(for: prevQuery, searchCompletion: completion, mode: .refresh)
     }
 
     func changeFavorite(repositoryId: Int) {

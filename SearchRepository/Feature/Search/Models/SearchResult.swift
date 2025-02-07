@@ -13,8 +13,7 @@ struct SearchResult {
 }
 
 enum SearchResultUpdateType {
-    case initial
-    case empty
+    case none
     case all
     case continuous
 }

@@ -30,6 +30,7 @@ final class StateView: UIView {
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.textColor = .gray
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
         return label
     }()
 
