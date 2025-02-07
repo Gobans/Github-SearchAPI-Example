@@ -104,9 +104,7 @@ final class RepositoryDetailViewController: UIViewController {
         favoriteButton.addTarget(self, action: #selector(favoriteButtonTappedAction), for: .touchUpInside)
         favoriteStargazersCountLabel.text = String(data.stargazersCount)
 
-        if let url = URL(string: data.owner.avatarURL) {
-            loadImage(from: url)
-        }
+        avatarImageView.setImage(from: data.owner.avatarURL)
     }
 
     private func setupUI() {
@@ -249,14 +247,6 @@ final class RepositoryDetailViewController: UIViewController {
             divider.heightAnchor.constraint(equalToConstant: 1)
         ])
         return divider
-    }
-
-    private func loadImage(from url: URL) {
-        DispatchQueue.global().async {
-            if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
-                DispatchQueue.main.async { self.avatarImageView.image = image }
-            }
-        }
     }
 
     @objc private func favoriteButtonTappedAction() {

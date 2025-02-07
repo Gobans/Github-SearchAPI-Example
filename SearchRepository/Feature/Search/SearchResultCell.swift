@@ -40,22 +40,9 @@ class SearchResultCell: UICollectionViewCell {
         favoriteButton.isSelected = data.isFavorite
         favoriteButton.addTarget(self, action: #selector(favoriteButtonTappedAction), for: .touchUpInside)
 
-        if let url = URL(string: data.owner.avatarURL) {
-            loadImage(from: url)
-        }
+        avatarImageView.setImage(from: data.owner.avatarURL)
     }
-
-    private func loadImage(from url: URL) {
-        DispatchQueue.global().async {
-            if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    self.avatarImageView.image = image
-                }
-            }
-        }
-    }
-
-    // 셀 레이아웃 구성
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
 
