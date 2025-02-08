@@ -8,20 +8,19 @@
 import Foundation
 import Combine
 
-final class RepositoryDetailViewModel {
-
-    var repositoryData: RepositoryData
-
-    private let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger
-    private(set) var favoriteChangedSubject = PassthroughSubject<Bool, Never>()
+final class RepoDetailViewModel {
 
     private var cancelBag = Set<AnyCancellable>()
 
-    init(repositoryData: RepositoryData, favoriteRepositoryDataManger: FavoriteRepositoryDataMananger) {
-        self.repositoryData = repositoryData
-        self.favoriteRepositoryDataMananger = favoriteRepositoryDataManger
+    var repositoryData: RepositoryData
+    private let favoriteRepoDataMananger: FavoriteRepoDataMananger
+    private(set) var favoriteChangedSubject = PassthroughSubject<Bool, Never>()
 
-        favoriteRepositoryDataMananger.changedRepositoryData
+    init(repositoryData: RepositoryData, favoriteRepoDataMananger: FavoriteRepoDataMananger) {
+        self.repositoryData = repositoryData
+        self.favoriteRepoDataMananger = favoriteRepoDataMananger
+
+        favoriteRepoDataMananger.changedRepositoryData
             .sink { [weak self] changedRepositoryData in
                 if changedRepositoryData.id == self?.repositoryData.id {
                     self?.repositoryData.isFavorite = changedRepositoryData.favorite
@@ -34,6 +33,6 @@ final class RepositoryDetailViewModel {
 
     func changeFavorite() {
         let newFavorite = !repositoryData.isFavorite
-        favoriteRepositoryDataMananger.change(data: repositoryData, isFavorite: newFavorite)
+        favoriteRepoDataMananger.change(data: repositoryData, isFavorite: newFavorite)
     }
 }

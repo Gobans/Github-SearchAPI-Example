@@ -7,8 +7,8 @@
 
 import UIKit
 
-class RepositoryHeaderView: UICollectionReusableView {
-    static let reuseIdentifier = "RepositoryHeaderView"
+class MyRepoHeaderView: UICollectionReusableView {
+    static let reuseIdentifier = "MyRepoHeaderView"
 
     private let titleLabel: UILabel = {
         let label = UILabel()

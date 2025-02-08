@@ -61,11 +61,11 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             }
             .store(in: &cancelBag)
 
-        viewModel.showToastSubject
+        viewModel.showErrorToastSubject
             .receive(on: DispatchQueue.main)
             .throttle(for: .seconds(3), scheduler: DispatchQueue.main, latest: true)
-            .sink { [weak self] toastMessage in
-                let toast = ToastView(message: toastMessage)
+            .sink { [weak self] errorMessage in
+                let toast = ToastView(message: errorMessage)
                 guard let view = self?.view else { return }
                 toast.show(in: view)
             }
@@ -86,7 +86,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             }
             .store(in: &cancelBag)
 
-        viewModel.changedRepositoryDataSubject
+        viewModel.changedRepoDataSubject
             .receive(on: DispatchQueue.main)
             .sink { [weak self] id in
                 self?.updateFavoritedSnapshot(data: id)
@@ -153,7 +153,7 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
     private func setupDataSource() {
         dataSource = UICollectionViewDiffableDataSource<Int, RepositoryData.ID>(collectionView: collectionView) { (collectionView, indexPath, id) -> UICollectionViewCell? in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCell.reuseIdentifier, for: indexPath)
-            if let cell = cell as? SearchResultCell, let item = self.viewModel.repositoryDataListDict[id] {
+            if let cell = cell as? SearchResultCell, let item = self.viewModel.repoDataDict[id] {
                 cell.configure(with: RepositorySummary(id: item.id, name: item.name, owner: item.owner, description: item.description, stargazersCount: item.stargazersCount, isFavorite: item.isFavorite))
                 cell.favoriteButtonTapped = { [weak self] repositoryId in
                     self?.viewModel.changeFavorite(repositoryId: repositoryId)

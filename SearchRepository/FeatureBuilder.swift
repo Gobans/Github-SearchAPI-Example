@@ -9,40 +9,40 @@ import UIKit
 
 final class FeatureBuilder {
 
-    private let favoriteRepositoryDataMananger = FavoriteRepositoryDataManangerImpl()
+    private let favoriteRepoDataMananger = FavoriteRepoManangerImpl()
 
     final class Router {
 
         weak var rootVC: UIViewController? = nil
 
-        private let favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger
+        private let favoriteRepoDataMananger: FavoriteRepoDataMananger
 
-        init(favoriteRepositoryDataMananger: FavoriteRepositoryDataMananger) {
-            self.favoriteRepositoryDataMananger = favoriteRepositoryDataMananger
+        init(favoriteRepoDataMananger: FavoriteRepoDataMananger) {
+            self.favoriteRepoDataMananger = favoriteRepoDataMananger
         }
 
         func routeToDetailPage(payload: RepositoryData) {
-            let viewModel = RepositoryDetailViewModel(repositoryData: payload, favoriteRepositoryDataManger: favoriteRepositoryDataMananger)
-            let vc = RepositoryDetailViewController(viewModel: viewModel)
+            let viewModel = RepoDetailViewModel(repositoryData: payload, favoriteRepoDataMananger: favoriteRepoDataMananger)
+            let vc = RepoDetailViewController(viewModel: viewModel)
             vc.modalPresentationStyle = .pageSheet
             rootVC?.present(vc, animated: true)
         }
     }
 
     func buildSearchViewController() -> SearchViewController {
-        let router = Router(favoriteRepositoryDataMananger: favoriteRepositoryDataMananger)
-        let repository = RepositoryDataRemoteRepositoryImpl(favoriteRepository: favoriteRepositoryDataMananger)
-        let useCase = SearchRepositoryDataUseCaseImpl(repository: repository)
-        let viewModel = SearchViewModel(repositoryDataUseCase: useCase, favoriteRepositoryDataMananger: favoriteRepositoryDataMananger, router: router)
+        let router = Router(favoriteRepoDataMananger: favoriteRepoDataMananger)
+        let repository = RepoDataRepositoryImpl(favoriteRepository: favoriteRepoDataMananger)
+        let useCase = SearchRepoUseCaseImpl(repository: repository)
+        let viewModel = SearchViewModel(repoUseCase: useCase, favoriteRepoDataMananger: favoriteRepoDataMananger, router: router)
         let vc = SearchViewController(viewModel: viewModel)
         router.rootVC = vc
         return vc
     }
 
-    func buildMyViewController() -> MyRepositoryViewController {
-        let router = Router(favoriteRepositoryDataMananger: favoriteRepositoryDataMananger)
-        let viewModel = MyRepositoryViewModel(favoriteRepositoryDataMananger: favoriteRepositoryDataMananger, router: router)
-        let vc = MyRepositoryViewController(viewModel: viewModel)
+    func buildMyViewController() -> MyRepoViewController {
+        let router = Router(favoriteRepoDataMananger: favoriteRepoDataMananger)
+        let viewModel = MyRepoViewModel(favoriteRepoDataMananger: favoriteRepoDataMananger, router: router)
+        let vc = MyRepoViewController(viewModel: viewModel)
         router.rootVC = vc
         return vc
     }

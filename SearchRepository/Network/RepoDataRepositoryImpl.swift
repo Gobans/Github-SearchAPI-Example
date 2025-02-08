@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-final class RepositoryDataRemoteRepositoryImpl: RepositoryDataRemoteRepository {
+final class RepoDataRepositoryImpl: RepoDataRepository {
 
     private let apiProvider = APIProvider<RepositoryAPI>()
 

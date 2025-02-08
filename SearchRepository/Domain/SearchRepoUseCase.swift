@@ -8,19 +8,19 @@
 import Foundation
 import Combine
 
-protocol SearchRepositoryDataUseCase {
-    func repositoryDataList(query: String, page: Int) -> AnyPublisher<[RepositoryData], SearchError>
+protocol SearchRepoUseCase {
+    func repoDataList(query: String, page: Int) -> AnyPublisher<[RepositoryData], SearchError>
 }
 
-final class SearchRepositoryDataUseCaseImpl: SearchRepositoryDataUseCase {
+final class SearchRepoUseCaseImpl: SearchRepoUseCase {
 
-    let repository: RepositoryDataRemoteRepository
+    let repository: RepoDataRepository
 
-    init(repository: RepositoryDataRemoteRepository) {
+    init(repository: RepoDataRepository) {
         self.repository = repository
     }
 
-    func repositoryDataList(query: String, page: Int) -> AnyPublisher<[RepositoryData], SearchError> {
+    func repoDataList(query: String, page: Int) -> AnyPublisher<[RepositoryData], SearchError> {
         guard !query.isEmpty else { return Just([]).setFailureType(to: SearchError.self).eraseToAnyPublisher() }
         let isPaging = page > 1
         return repository.fetchRepositoryDataList(query: query, page: page)

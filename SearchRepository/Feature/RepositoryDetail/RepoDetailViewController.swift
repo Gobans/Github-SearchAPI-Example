@@ -8,10 +8,10 @@
 import Combine
 import UIKit
 
-final class RepositoryDetailViewController: UIViewController {
-    private let viewModel: RepositoryDetailViewModel
+final class RepoDetailViewController: UIViewController {
+    private let viewModel: RepoDetailViewModel
 
-    init(viewModel: RepositoryDetailViewModel) {
+    init(viewModel: RepoDetailViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }

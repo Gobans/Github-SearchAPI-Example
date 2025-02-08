@@ -8,7 +8,7 @@
 import UIKit
 import Combine
 
-class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
+class MyRepoViewController: UIViewController, UISearchBarDelegate, UICollectionViewDelegate {
 
     enum Section: Int, CaseIterable {
         case ad
@@ -18,9 +18,9 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, RepositoryData.ID>!
 
-    private let viewModel: MyRepositoryViewModel
+    private let viewModel: MyRepoViewModel
 
-    init(viewModel: MyRepositoryViewModel) {
+    init(viewModel: MyRepoViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -39,7 +39,7 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
         setupCollectionView()
         setupDataSource()
 
-        viewModel.updateRepositoryDataListSubject
+        viewModel.updateRepoDataListSubject
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] idList in
@@ -47,7 +47,7 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
             }
             .store(in: &cancelBag)
 
-        viewModel.changedRepositoryDataSubject
+        viewModel.changedRepoDataSubject
             .receive(on: DispatchQueue.main)
             .sink { [weak self] id in
                 self?.updateFavoritedSnapshot(data: id)
@@ -78,7 +78,7 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
         collectionView.backgroundColor = .white
         collectionView.register(SearchResultCell.self, forCellWithReuseIdentifier: SearchResultCell.reuseIdentifier)
         collectionView.register(AdCell.self, forCellWithReuseIdentifier: AdCell.reuseIdentifier)
-        collectionView.register(RepositoryHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: RepositoryHeaderView.reuseIdentifier)
+        collectionView.register(MyRepoHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: MyRepoHeaderView.reuseIdentifier)
 
 
         view.addSubview(collectionView)
@@ -143,7 +143,7 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
 
             case .repository:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SearchResultCell.reuseIdentifier, for: indexPath)
-                if let cell = cell as? SearchResultCell, let item = self.viewModel.repositoryDataListDict[id] {
+                if let cell = cell as? SearchResultCell, let item = self.viewModel.repoDataDict[id] {
                     cell.configure(with: RepositorySummary(id: item.id, name: item.name, owner: item.owner, description: item.description, stargazersCount: item.stargazersCount, isFavorite: item.isFavorite))
                     cell.favoriteButtonTapped = { [weak self] repositoryId in
                         self?.viewModel.changeFavorite(repositoryId: repositoryId)
@@ -160,9 +160,9 @@ class MyRepositoryViewController: UIViewController, UISearchBarDelegate, UIColle
             if section == .repository {
                 let headerView = collectionView.dequeueReusableSupplementaryView(
                     ofKind: kind,
-                    withReuseIdentifier: RepositoryHeaderView.reuseIdentifier,
+                    withReuseIdentifier: MyRepoHeaderView.reuseIdentifier,
                     for: indexPath
-                ) as? RepositoryHeaderView
+                ) as? MyRepoHeaderView
                 return headerView
             }
             return nil

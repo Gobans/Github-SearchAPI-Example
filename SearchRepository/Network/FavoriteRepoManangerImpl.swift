@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger, FavoriteRepository {
+final class FavoriteRepoManangerImpl: FavoriteRepoDataMananger, FavoriteRepository {
 
     private let userDefaults = UserDefaults()
 
@@ -67,7 +67,7 @@ final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger, 
         return false
     }
 
-    func repositoryDataListDict() -> [RepositoryData.ID : RepositoryData] {
+    func repositoryDataDict() -> [RepositoryData.ID : RepositoryData] {
         return repositoryDict
     }
 }

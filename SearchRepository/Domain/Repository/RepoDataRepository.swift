@@ -8,10 +8,6 @@
 import Foundation
 import Combine
 
-protocol RepositoryDataRemoteRepository {
+protocol RepoDataRepository {
     func fetchRepositoryDataList(query: String, page: Int) -> AnyPublisher<[RepositoryData], SearchError>
-}
-
-protocol RepositoryDataLocalRepository {
-    func fetchRepositoryDataList() -> [RepositoryData]
 }
