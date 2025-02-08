@@ -16,9 +16,11 @@ class MainTabBarController: UITabBarController {
 
         let searchVC = UINavigationController(rootViewController: builder.buildSearchViewController())
         searchVC.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 0)
+        searchVC.tabBarItem.title = "Search"
 
         let myVC = UINavigationController(rootViewController: builder.buildMyViewController())
         myVC.tabBarItem = UITabBarItem(tabBarSystemItem: .favorites, tag: 1)
+        myVC.tabBarItem.title = "My"
 
         viewControllers = [searchVC, myVC]
     }

@@ -34,7 +34,7 @@ class MyRepoViewController: UIViewController, UISearchBarDelegate, UICollectionV
     override func viewDidLoad() {
         super.viewDidLoad   ()
         view.backgroundColor = .white
-        title = "My"
+        title = "2025_SOOP_사전과제"
 
         setupCollectionView()
         setupDataSource()
