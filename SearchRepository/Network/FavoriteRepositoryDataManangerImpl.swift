@@ -8,16 +8,6 @@
 import Foundation
 import Combine
 
-protocol FavoriteRepositoryDataMananger {
-    var changedRepositoryData: AnyPublisher<FavoriteRepositoryData, Never> { get }
-    func change(data: RepositoryData, isFavorite: Bool)
-    func repositoryDataListDict() -> [RepositoryData.ID : RepositoryData]
-}
-
-protocol FavoriteRepository {
-    func isFavorite(repositoryId: RepositoryData.ID) -> Bool
-}
-
 final class FavoriteRepositoryDataManangerImpl: FavoriteRepositoryDataMananger, FavoriteRepository {
 
     private let userDefaults = UserDefaults()
