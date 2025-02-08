@@ -32,9 +32,9 @@ class MyRepoViewController: UIViewController, UISearchBarDelegate, UICollectionV
     private var cancelBag = Set<AnyCancellable>()
 
     override func viewDidLoad() {
-        super.viewDidLoad   ()
+        super.viewDidLoad()
         view.backgroundColor = .white
-        title = "2025_SOOP_사전과제"
+        title = "My"
 
         setupCollectionView()
         setupDataSource()

@@ -33,6 +33,6 @@ final class RepoDetailViewModel {
 
     func changeFavorite() {
         let newFavorite = !repositoryData.isFavorite
-        favoriteRepoDataMananger.change(data: repositoryData, isFavorite: newFavorite)
+        favoriteRepoDataMananger.change(data: repositoryData)
     }
 }

@@ -223,8 +223,6 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
 
     private func updateSearchResultSnapshot(data: [RepositoryData.ID], type: SearchResultUpdateType) {
         switch type {
-        case .none:
-            break
         case .all:
             var snapshot = NSDiffableDataSourceSnapshot<Int, RepositoryData.ID>()
             snapshot.appendSections([0])

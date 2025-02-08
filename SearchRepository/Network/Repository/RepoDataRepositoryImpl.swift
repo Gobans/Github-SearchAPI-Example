@@ -36,8 +36,9 @@ final class RepoDataRepositoryImpl: RepoDataRepository {
                     } else if self.rateLimitExceededErrorCode.contains(httpError.statusCode) {
                         return SearchError.tooManyRequest
                     }
+                    return SearchError.badServerResponse
                 }
-                return SearchError.badServerResponse
+                return SearchError.underlyingError(error)
             })
             .eraseToAnyPublisher()
     }

@@ -44,12 +44,15 @@ final class FavoriteRepoDataManagerImplTests: XCTestCase {
 
     func test_즐겨찾기를_변경했을때_즐겨찾기한_데이터는_로컬저장소에_저장() throws {
         // given
-        let repositoryData: RepositoryData = .mock
+        let isFavorite = false
+        var repositoryData: RepositoryData = .mock
+        repositoryData.isFavorite = isFavorite
+
         var expectedRepositoryData = repositoryData
         expectedRepositoryData.isFavorite = !repositoryData.isFavorite
 
         // when
-        manager.change(data: repositoryData, isFavorite: true)
+        manager.change(data: repositoryData)
 
         var receivedRepositoryData: RepositoryData?
         if let data = userDefaults.data(forKey: FavoriteRepoManangerImpl.Key.repositoryData), let decodedData = try? JSONDecoder().decode([RepositoryData].self, from: data) {
@@ -62,12 +65,15 @@ final class FavoriteRepoDataManagerImplTests: XCTestCase {
 
     func test_즐겨찾기를_변경했을때_즐겨찾기를_취소한_데이터는_로컬데이터에서_삭제() throws {
         // given
-        let repositoryData: RepositoryData = .mock
+        let isFavorite = true
+        var repositoryData: RepositoryData = .mock
+        repositoryData.isFavorite = isFavorite
+
         userDefaults.set(try? JSONEncoder().encode(repositoryData) , forKey: FavoriteRepoManangerImpl.Key.repositoryData)
         let expectedRepositoryData: [RepositoryData]? = []
 
         // when
-        manager.change(data: repositoryData, isFavorite: false)
+        manager.change(data: repositoryData)
 
         var receivedRepositoryData: [RepositoryData]?
         if let data = userDefaults.data(forKey: FavoriteRepoManangerImpl.Key.repositoryData) {

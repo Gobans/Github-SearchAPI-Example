@@ -10,6 +10,6 @@ import Combine
 
 protocol FavoriteRepoDataMananger {
     var changedRepositoryData: AnyPublisher<FavoriteRepositoryData, Never> { get }
-    func change(data: RepositoryData, isFavorite: Bool)
+    func change(data: RepositoryData)
     func repositoryDataDict() -> [RepositoryData.ID : RepositoryData]
 }

@@ -39,7 +39,7 @@ final class MyRepoViewModel {
     func changeFavorite(repositoryId: Int) {
         if let repositoryData = repoDataDict[repositoryId] {
             let newFavorite = !repositoryData.isFavorite
-            favoriteRepoDataMananger.change(data: repositoryData, isFavorite: newFavorite)
+            favoriteRepoDataMananger.change(data: repositoryData)
         }
     }
 

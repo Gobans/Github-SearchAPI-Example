@@ -105,7 +105,7 @@ final class SearchViewModel {
             .sink(receiveCompletion: { [weak self] completion in
                 if case .failure(let error) = completion {
                     switch error {
-                    case .badServerResponse, .tooManyRequest, .unknown:
+                    case .badServerResponse, .tooManyRequest, .underlyingError:
                         self?.isTemporaryPreventPaging = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                             self?.isTemporaryPreventPaging = false
@@ -134,7 +134,7 @@ final class SearchViewModel {
     func changeFavorite(repositoryId: Int) {
         if let repositoryData = repoDataDict[repositoryId] {
             let newFavorite = !repositoryData.isFavorite
-            favoriteRepoDataMananger.change(data: repositoryData, isFavorite: newFavorite)
+            favoriteRepoDataMananger.change(data: repositoryData)
         }
     }
 

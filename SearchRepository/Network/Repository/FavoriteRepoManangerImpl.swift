@@ -14,8 +14,6 @@ final class FavoriteRepoManangerImpl: FavoriteRepoDataMananger, FavoriteReposito
 
     private let favoriteSubject = PassthroughSubject<FavoriteRepositoryData, Never>()
 
-    private var favoriteRepositoryDict: [RepositoryData.ID: RepositoryData] = [:]
-
     struct Key {
         static let repositoryData = "RepositoryData"
     }
@@ -52,7 +50,8 @@ final class FavoriteRepoManangerImpl: FavoriteRepoDataMananger, FavoriteReposito
         favoriteSubject.eraseToAnyPublisher()
     }
 
-    func change(data: RepositoryData, isFavorite: Bool) {
+    func change(data: RepositoryData) {
+        let isFavorite = !data.isFavorite
         let favoriteRepositoryData = FavoriteRepositoryData(id: data.id, favorite: isFavorite)
         if isFavorite {
             var newData = data

@@ -159,7 +159,7 @@ final class SearchViewModelTests: XCTestCase {
 
     func test_검색했을때_오류가_발생한다면_오류를_표시() throws {
         // given
-        let error: SearchError = .unknown
+        let error: SearchError = .underlyingError(nil)
         let expectedViewSate: SearchResultViewState = .networkError(error.errorMessage)
 
         searchRepoUseCase.stubbedRepoDataListResult = Fail(error: error)
@@ -242,7 +242,7 @@ final class SearchViewModelTests: XCTestCase {
 
     func test_페이징했을때_오류가_발생한다면_오류를_표시() throws {
         // given
-        let error: SearchError = .unknown
+        let error: SearchError = .underlyingError(nil)
         let expectedViewSate: SearchResultViewState = .networkError(error.errorMessage)
 
         searchRepoUseCase.stubbedRepoDataListResult = Fail(error: error)
