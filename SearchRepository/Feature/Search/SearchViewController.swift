@@ -230,6 +230,9 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
             snapshot.appendSections([0])
             snapshot.appendItems(data)
             dataSource.apply(snapshot, animatingDifferences: false)
+            if !data.isEmpty {
+                scrollToFirstItem()
+            }
         case .continuous:
             var snapshot = dataSource.snapshot()
             snapshot.appendItems(data)
@@ -247,6 +250,11 @@ class SearchViewController: UIViewController, UISearchBarDelegate, UICollectionV
         viewModel.refreshData() { [weak self] in
             self?.refreshControl.endRefreshing()
         }
+    }
+
+    private func scrollToFirstItem() {
+        let firstIndexPath = IndexPath(item: 0, section: 0)
+        collectionView.scrollToItem(at: firstIndexPath, at: .top, animated: false)
     }
 }
 
