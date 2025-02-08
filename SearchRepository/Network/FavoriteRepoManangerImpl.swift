@@ -10,14 +10,18 @@ import Combine
 
 final class FavoriteRepoManangerImpl: FavoriteRepoDataMananger, FavoriteRepository {
 
-    private let userDefaults = UserDefaults()
+    private let userDefaults: UserDefaults
 
     private let favoriteSubject = PassthroughSubject<FavoriteRepositoryData, Never>()
 
     private var favoriteRepositoryDict: [RepositoryData.ID: RepositoryData] = [:]
 
-    private struct Key {
+    struct Key {
         static let repositoryData = "RepositoryData"
+    }
+
+    init(userDefaults: UserDefaults) {
+        self.userDefaults = userDefaults
     }
 
     private let decoder = JSONDecoder()

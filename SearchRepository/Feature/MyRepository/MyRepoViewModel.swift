@@ -20,9 +20,9 @@ final class MyRepoViewModel {
     private var cancelBag = Set<AnyCancellable>()
 
     private let favoriteRepoDataMananger: FavoriteRepoDataMananger
-    private let router: FeatureBuilder.Router
+    private let router: DetailPageRouter
 
-    init(favoriteRepoDataMananger: FavoriteRepoDataMananger, router: FeatureBuilder.Router) {
+    init(favoriteRepoDataMananger: FavoriteRepoDataMananger, router: DetailPageRouter) {
         self.favoriteRepoDataMananger = favoriteRepoDataMananger
         self.router = router
 

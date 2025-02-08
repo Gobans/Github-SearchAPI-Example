@@ -32,9 +32,9 @@ final class SearchViewModel {
 
     private let repoUseCase: SearchRepoUseCase
     private let favoriteRepoDataMananger: FavoriteRepoDataMananger
-    private let router: FeatureBuilder.Router
+    private let router: DetailPageRouter
 
-    init(repoUseCase: SearchRepoUseCase, favoriteRepoDataMananger: FavoriteRepoDataMananger, router: FeatureBuilder.Router) {
+    init(repoUseCase: SearchRepoUseCase, favoriteRepoDataMananger: FavoriteRepoDataMananger, router: DetailPageRouter) {
         self.repoUseCase = repoUseCase
         self.favoriteRepoDataMananger = favoriteRepoDataMananger
         self.router = router
